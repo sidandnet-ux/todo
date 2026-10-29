@@ -12,11 +12,14 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
+   <div class="brand">
       <div class="brand-mark" aria-hidden="true">✓</div>
       <div><h1>Calendar Tasks</h1><p>Make today count.</p></div>
     </div>
-    <button id="todayBtn" class="button button-light" type="button">Today</button>
+    <div class="topbar-actions">
+      <button id="backupBtn" class="button button-light" type="button">Backup / Restore</button>
+      <button id="todayBtn" class="button button-light" type="button">Today</button>
+    </div>
   </header>
 
   <main class="app-shell">
@@ -79,6 +82,29 @@
     </section>
   </main>
 
+  <section id="backupPanel" class="backup-panel panel" hidden aria-labelledby="backupTitle">
+    <div class="backup-heading">
+      <div><p class="eyebrow">DATA &amp; SAFETY</p><h2 id="backupTitle">Backup &amp; Restore</h2><p class="muted">Save a copy of your tasks or restore them from a backup file.</p></div>
+      <button id="closeBackupBtn" class="icon-button" type="button" aria-label="Close backup panel">×</button>
+    </div>
+    <div class="backup-actions">
+      <div class="backup-card">
+        <div class="backup-card-icon">↓</div>
+        <h3>Take a backup</h3>
+        <p>Download all your tasks, including dates, times and completion status, as a JSON file.</p>
+        <button id="exportBackupBtn" class="button button-primary" type="button">Download backup</button>
+      </div>
+      <div class="backup-card">
+        <div class="backup-card-icon">↑</div>
+        <h3>Restore a backup</h3>
+        <p>Choose a previously downloaded Calendar Tasks backup file.</p>
+        <input id="backupFileInput" type="file" accept=".json,application/json" hidden>
+        <button id="chooseBackupBtn" class="button button-light" type="button">Choose backup file</button>
+        <p class="backup-hint">Restoring replaces the tasks currently on this device. Download a backup first if you want to keep them.</p>
+      </div>
+    </div>
+    <div class="backup-note"><strong>Tip:</strong> Store the downloaded file somewhere safe. Backups are not uploaded to GitHub or any server.</div>
+  </section>
   <footer class="footer-note"><span>🔒 Your tasks stay on this device.</span><span>Works offline after first load.</span></footer>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="./app.js" defer></script>
