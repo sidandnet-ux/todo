@@ -12,18 +12,19 @@
 </head>
 <body>
   <header class="topbar">
-   <div class="brand">
+    <div class="brand">
       <div class="brand-mark" aria-hidden="true">✓</div>
       <div><h1>Calendar Tasks</h1><p>Make today count.</p></div>
     </div>
     <div class="topbar-actions">
+      <button id="allTasksBtn" class="button button-light" type="button">All Tasks</button>
       <button id="backupBtn" class="button button-light" type="button">Backup / Restore</button>
       <button id="todayBtn" class="button button-light" type="button">Today</button>
     </div>
   </header>
 
-  <main class="app-shell">
-    <section class="calendar-panel panel">
+  <main class="app-shell" id="appShell">
+    <section id="calendarPanel" class="calendar-panel panel">
       <div class="calendar-heading">
         <button id="prevMonth" class="icon-button" aria-label="Previous month" type="button">‹</button>
         <div><h2 id="monthLabel">Month Year</h2><p id="monthSummary">Your plans at a glance</p></div>
@@ -40,19 +41,37 @@
       </div>
     </section>
 
-    <section class="tasks-panel panel">
+    <section id="tasksPanel" class="tasks-panel panel">
       <div class="tasks-heading">
         <div>
-          <p class="eyebrow">DAILY PLAN</p>
+          <p class="eyebrow" id="tasksEyebrow">DAILY PLAN</p>
           <h2 id="selectedDateLabel">Tasks</h2>
           <p id="selectedSummary" class="muted">Choose a date to see its tasks.</p>
         </div>
         <button id="addTaskBtn" class="button button-primary" type="button"><span aria-hidden="true">＋</span> Add task</button>
       </div>
       <div class="progress-wrap">
-        <div class="progress-label"><span>Daily progress</span><strong id="progressText">0%</strong></div>
+        <div class="progress-label"><span id="progressLabel">Daily progress</span><strong id="progressText">0%</strong></div>
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
       </div>
+
+      <div id="allTasksControls" class="all-tasks-controls" hidden>
+        <input id="allTasksSearch" type="search" placeholder="Search tasks…" aria-label="Search tasks">
+        <select id="allTasksStatus" aria-label="Filter task status">
+          <option value="pending">Pending</option>
+          <option value="all">All statuses</option>
+          <option value="completed">Completed</option>
+          <option value="overdue">Overdue</option>
+        </select>
+        <select id="allTasksSort" aria-label="Sort tasks">
+          <option value="date">Due date (earliest first)</option>
+          <option value="date-desc">Due date (latest first)</option>
+          <option value="created">Recently created</option>
+          <option value="title">Task name (A–Z)</option>
+        </select>
+        <p class="all-tasks-hint">Change the date or time on any task to reschedule it.</p>
+      </div>
+
       <form id="taskForm" class="task-form" hidden>
         <label for="taskTitle">Task name</label>
         <input id="taskTitle" name="title" maxlength="180" placeholder="What do you need to do?" required>
