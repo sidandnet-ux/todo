@@ -31,5 +31,12 @@ If replacing an existing app, download a backup of the old files first. Do not u
 ## Test locally
 Service workers generally require HTTPS or `localhost`; opening `index.html` directly as a `file://` URL will not enable offline/PWA installation. You can use GitHub Pages for testing or run a local HTTP server.
 
+## Backup and restore
+- Tap **Backup / Restore** in the app.
+- Choose **Download backup** to save a JSON file containing all tasks, dates, optional times, completion state and creation timestamps.
+- To restore, tap **Choose backup file** and select a JSON backup created by this app.
+- Restore replaces the current task list on this device after a confirmation prompt. If you need both sets of tasks, download a backup of the current tasks before restoring.
+- Keep the backup file in a safe place; it contains your task information.
+
 ## Data and privacy
 Tasks are stored in the browser's local storage on the device and browser profile you use. They do not automatically sync to another device. Clearing site data or browser storage may erase them, so keep your own backup if the tasks are important.
