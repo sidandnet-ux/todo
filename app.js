@@ -8,7 +8,7 @@
     taskList: $("taskList"), emptyState: $("emptyState"), taskCount: $("taskCount"),
     progressText: $("progressText"), progressBar: $("progressBar"), taskForm: $("taskForm"),
     taskTitle: $("taskTitle"), taskDate: $("taskDate"), taskTime: $("taskTime"),
-    addTaskBtn: $("addTaskBtn"), toast: $("toast")
+    addTaskBtn: $("addTaskBtn"), toast: $("toast"), backupPanel: $("backupPanel"), backupFileInput: $("backupFileInput")
   };
   const today = new Date();
   const dateKey = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -198,7 +198,86 @@
     if (!confirm(`Remove ${completedIds.size} completed ${completedIds.size === 1 ? "task" : "tasks"} from this day?`)) return;
     tasks = tasks.filter(t => !completedIds.has(t.id)); saveTasks(); render(); showToast("Completed tasks cleared");
   });
-  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  function exportBackup() {
+    const payload = {
+      app: "Calendar Tasks",
+      formatVersion: 1,
+      exportedAt: new Date().toISOString(),
+      tasks: tasks
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,10);
+    link.href = url;
+    link.download = `calendar-tasks-backup-${stamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast(`Backup downloaded (${tasks.length} ${tasks.length === 1 ? "task" : "tasks"})`);
+  }
+  function validateBackup(parsed) {
+    const candidate = Array.isArray(parsed) ? parsed : parsed && parsed.tasks;
+    if (!Array.isArray(candidate)) throw new Error("This file does not contain a Calendar Tasks backup.");
+    const cleaned = [];
+    const seen = new Set();
+    for (const item of candidate) {
+      if (!item || typeof item !== "object" || typeof item.title !== "string" || typeof item.date !== "string") {
+        throw new Error("The backup contains an invalid task. Nothing was changed.");
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || Number.isNaN(parseDate(item.date).getTime())) {
+        throw new Error("The backup contains an invalid task date. Nothing was changed.");
+      }
+      const id = typeof item.id === "string" && item.id.trim() ? item.id : `restored-${Date.now()}-${cleaned.length}`;
+      if (seen.has(id)) throw new Error("The backup contains duplicate task IDs. Nothing was changed.");
+      seen.add(id);
+      cleaned.push({
+        id,
+        title: item.title.trim().slice(0,180),
+        date: item.date,
+        time: typeof item.time === "string" && /^\d{2}:\d{2}$/.test(item.time) ? item.time : "",
+        completed: item.completed === true,
+        createdAt: Number.isFinite(item.createdAt) ? item.createdAt : Date.now() + cleaned.length
+      });
+      if (!cleaned[cleaned.length-1].title) throw new Error("The backup contains an empty task name. Nothing was changed.");
+    }
+    return cleaned;
+  }
+  async function restoreBackup(file) {
+    if (!file) return;
+    try {
+      const raw = await file.text();
+      const parsed = JSON.parse(raw);
+      const restored = validateBackup(parsed);
+      const message = `Restore ${restored.length} ${restored.length === 1 ? "task" : "tasks"} from this backup?\\n\\nThis replaces all tasks currently stored on this device. This cannot be undone.`;
+      if (!confirm(message)) return;
+      tasks = restored;
+      saveTasks();
+      closeForm();
+      selectedDate = restored.length ? restored[0].date : todayKey;
+      const selected = parseDate(selectedDate);
+      visibleYear = selected.getFullYear();
+      visibleMonth = selected.getMonth();
+      render();
+      showToast(`Restored ${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}`);
+      els.backupPanel.hidden = true;
+    } catch (error) {
+      if (error instanceof SyntaxError) showToast("That file is not valid JSON");
+      else showToast(error && error.message ? error.message : "Could not restore this backup");
+    } finally {
+      els.backupFileInput.value = "";
+    }
+  }
+  $("backupBtn").addEventListener("click", () => {
+    els.backupPanel.hidden = !els.backupPanel.hidden;
+    if (!els.backupPanel.hidden) els.backupPanel.scrollIntoView({behavior:"smooth", block:"nearest"});
+  });
+  $("closeBackupBtn").addEventListener("click", () => { els.backupPanel.hidden = true; });
+  $("exportBackupBtn").addEventListener("click", exportBackup);
+  $("chooseBackupBtn").addEventListener("click", () => els.backupFileInput.click());
+  els.backupFileInput.addEventListener("change", () => restoreBackup(els.backupFileInput.files && els.backupFileInput.files[0]));
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
     window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => showToast("Offline mode could not be enabled yet")));
   }
   render();
